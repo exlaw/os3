@@ -2,7 +2,7 @@
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                             proto.h
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                                    
+                                                    Forrest Yu, 2005
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 /* klib.asm */
@@ -44,7 +44,6 @@ PUBLIC void in_process(TTY* p_tty, u32 key);
 /* console.c */
 PUBLIC void out_char(CONSOLE* p_con, char ch);
 PUBLIC void scroll_screen(CONSOLE* p_con, int direction);
-PUBLIC void clear_screen(CONSOLE *p_con);
 
 /* 以下是系统调用相关 */
 

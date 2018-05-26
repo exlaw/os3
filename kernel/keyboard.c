@@ -1,7 +1,7 @@
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                             keyboard.c
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                                   
+                                                    Forrest Yu, 2005
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 #include "type.h"
@@ -15,6 +15,7 @@
 #include "proto.h"
 #include "keyboard.h"
 #include "keymap.h"
+
 PRIVATE KB_INPUT	kb_in;
 
 PRIVATE	int	code_with_E0;
@@ -27,7 +28,6 @@ PRIVATE	int	ctrl_r;		/* l ctrl state	 */
 PRIVATE	int	caps_lock;	/* Caps Lock	 */
 PRIVATE	int	num_lock;	/* Num Lock	 */
 PRIVATE	int	scroll_lock;	/* Scroll Lock	 */
-PRIVATE int	tab;            /*Tab */
 PRIVATE	int	column;
 
 PRIVATE int	caps_lock;	/* Caps Lock	 */
@@ -44,6 +44,7 @@ PRIVATE void    kb_ack();
  *======================================================================*/
 PUBLIC void keyboard_handler(int irq)
 {
+
 	u8 scan_code = in_byte(KB_DATA);
 
 	if (kb_in.count < KB_IN_BYTES) {
@@ -68,7 +69,7 @@ PUBLIC void init_keyboard()
 	shift_l	= shift_r = 0;
 	alt_l	= alt_r   = 0;
 	ctrl_l	= ctrl_r  = 0;
-        tab = 0;
+
 	caps_lock   = 0;
 	num_lock    = 1;
 	scroll_lock = 0;
@@ -151,13 +152,6 @@ PUBLIC void keyboard_read(TTY* p_tty)
 			column = 0;
 
 			int caps = shift_l || shift_r;
-                        if (tab&caps)
-                        {
-                            column = 2;
-                            tab = 0;
-                        }
-                        else 
-                        {  
 			if (caps_lock) {
 				if ((keyrow[0] >= 'a') && (keyrow[0] <= 'z')){
 					caps = !caps;
@@ -166,7 +160,6 @@ PUBLIC void keyboard_read(TTY* p_tty)
 			if (caps) {
 				column = 1;
 			}
-                        }
 
 			if (code_with_E0) {
 				column = 2;
@@ -175,13 +168,6 @@ PUBLIC void keyboard_read(TTY* p_tty)
 			key = keyrow[column];
 
 			switch(key) {
-                        case TAB:
-                             tab = make;
-			     if (shift_l|shift_r)
-				{
-				 make = 0;
-				}
-                             break;
 			case SHIFT_L:
 				shift_l = make;
 				break;

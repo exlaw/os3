@@ -17,10 +17,10 @@ CC		= gcc
 LD		= ld
 ASMBFLAGS	= -I boot/include/
 ASMKFLAGS	= -I include/ -f elf
-CFLAGS		= -I include/ -c -fno-builtin -fno-stack-protector
+CFLAGS		= -I include/ -c -fno-stack-protector
 LDFLAGS		= -s -Ttext $(ENTRYPOINT)
 DASMFLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
-BOCH = bochs
+
 # This Program
 ORANGESBOOT	= boot/boot.bin boot/loader.bin
 ORANGESKERNEL	= kernel.bin
@@ -31,7 +31,7 @@ OBJS		= kernel/kernel.o kernel/syscall.o kernel/start.o kernel/main.o\
 DASMOUTPUT	= kernel.bin.asm
 
 # All Phony Targets
-.PHONY : everything final image clean realclean disasm all buildimg  run start
+.PHONY : everything final image clean realclean disasm all buildimg
 
 # Default starting position
 nop :
@@ -52,18 +52,13 @@ realclean :
 disasm :
 	$(DASM) $(DASMFLAGS) $(ORANGESKERNEL) > $(DASMOUTPUT)
 
-run:	
-	bochs -f bochsrc
-
-start:	image run
 # We assume that "a.img" exists in current folder
 buildimg :
 	dd if=boot/boot.bin of=a.img bs=512 count=1 conv=notrunc
-	sudo mount -o loop a.img /media/floppy0/
-	sudo cp -fv boot/loader.bin /media/floppy0/
-	sudo cp -fv kernel.bin /media/floppy0
-	sudo umount /media/floppy0
-
+	sudo mount -o loop a.img /mnt/floppy/
+	sudo cp -fv boot/loader.bin /mnt/floppy/
+	sudo cp -fv kernel.bin /mnt/floppy
+	sudo umount /mnt/floppy
 
 boot/boot.bin : boot/boot.asm boot/include/load.inc boot/include/fat12hdr.inc
 	$(ASM) $(ASMBFLAGS) -o $@ $<
@@ -72,7 +67,7 @@ boot/loader.bin : boot/loader.asm boot/include/load.inc boot/include/fat12hdr.in
 	$(ASM) $(ASMBFLAGS) -o $@ $<
 
 $(ORANGESKERNEL) : $(OBJS)
-	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
+	$(LD) $(LDFLAGS) -melf_i386 -o $(ORANGESKERNEL) $(OBJS)
 
 kernel/kernel.o : kernel/kernel.asm include/sconst.inc
 	$(ASM) $(ASMKFLAGS) -o $@ $<
@@ -82,41 +77,41 @@ kernel/syscall.o : kernel/syscall.asm include/sconst.inc
 
 kernel/start.o: kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/main.o: kernel/main.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/clock.o: kernel/clock.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/keyboard.o: kernel/keyboard.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/tty.o: kernel/tty.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/console.o: kernel/console.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/i8259.o: kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/global.o: kernel/global.c include/type.h include/const.h include/protect.h include/proc.h \
 			include/global.h include/proto.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/protect.o: kernel/protect.c include/type.h include/const.h include/protect.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 kernel/proc.o: kernel/proc.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 lib/klib.o: lib/klib.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -m32 -o $@ $<
 
 lib/kliba.o : lib/kliba.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
