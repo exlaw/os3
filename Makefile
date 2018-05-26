@@ -17,7 +17,7 @@ CC		= gcc
 LD		= ld
 ASMBFLAGS	= -I boot/include/
 ASMKFLAGS	= -I include/ -f elf
-CFLAGS		= -I include/ -c -fno-stack-protector
+CFLAGS		= -I include/ -c -fno-builtin
 LDFLAGS		= -s -Ttext $(ENTRYPOINT)
 DASMFLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
@@ -67,7 +67,7 @@ boot/loader.bin : boot/loader.asm boot/include/load.inc boot/include/fat12hdr.in
 	$(ASM) $(ASMBFLAGS) -o $@ $<
 
 $(ORANGESKERNEL) : $(OBJS)
-	$(LD) $(LDFLAGS) -melf_i386 -o $(ORANGESKERNEL) $(OBJS)
+	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
 
 kernel/kernel.o : kernel/kernel.asm include/sconst.inc
 	$(ASM) $(ASMKFLAGS) -o $@ $<
@@ -77,41 +77,41 @@ kernel/syscall.o : kernel/syscall.asm include/sconst.inc
 
 kernel/start.o: kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/main.o: kernel/main.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/clock.o: kernel/clock.c
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/keyboard.o: kernel/keyboard.c
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/tty.o: kernel/tty.c
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/console.o: kernel/console.c
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/i8259.o: kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/global.o: kernel/global.c include/type.h include/const.h include/protect.h include/proc.h \
 			include/global.h include/proto.h
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/protect.o: kernel/protect.c include/type.h include/const.h include/protect.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/proc.o: kernel/proc.c
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 lib/klib.o: lib/klib.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
-	$(CC) $(CFLAGS) -m32 -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 lib/kliba.o : lib/kliba.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<

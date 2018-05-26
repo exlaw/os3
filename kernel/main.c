@@ -73,8 +73,7 @@ PUBLIC int kernel_main()
 	p_proc_ready	= proc_table;
 
 	init_clock();
-    
-	init_keyboard();
+        init_keyboard();
 
 	restart();
 
@@ -88,8 +87,8 @@ void TestA()
 {
 	int i = 0;
 	while (1) {
-		//to_clear = 1;
-		// milli_delay(20000);
+		/* disp_str("A."); */
+		milli_delay(10);
 	}
 }
 
