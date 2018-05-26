@@ -2,8 +2,9 @@
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			      console.c
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-						    Forrest Yu, 2005
+				
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
 
 /*
 	回车键: 把光标移到第一列
@@ -25,7 +26,95 @@
 PRIVATE void set_cursor(unsigned int position);
 PRIVATE void set_video_start_addr(u32 addr);
 PRIVATE void flush(CONSOLE* p_con);
+PUBLIC void remove_search(CONSOLE * p_con);
+PUBLIC void find_search(CONSOLE * p_con);
+extern int color;
+extern unsigned int tabs[100];
+extern int tabs_len;
+extern u32 input_search[100];
+extern int search_len;
 
+PUBLIC void remove_search(CONSOLE * p_con){
+
+    char ch_color =  DEFAULT_CHAR_COLOR;
+    int i=0;
+    for(i=0;i<search_len;i++){
+         p_con->cursor--;
+         u8* p_vmem = (u8*)(V_MEM_BASE + p_con->cursor * 2);
+		if (p_con->cursor < p_con->original_addr + p_con->v_mem_limit - 1) {                       
+			*p_vmem++ = ' ';
+			*p_vmem++ = ch_color;
+	
+		}
+		set_cursor(p_con->cursor);
+    }
+
+    int ptr=0;
+    ch_color = DEFAULT_CHAR_COLOR;;
+    u8* p_vmem;
+    
+	for(ptr=p_con->original_addr;ptr<V_MEM_BASE + p_con->cursor * 2-search_len;ptr+=2){
+		p_vmem = (u8*)(V_MEM_BASE + ptr);
+		int i=0;
+        if(*(p_vmem)==input_search[0]){
+
+        	for(i=1;i<search_len;i++){
+               p_vmem=(u8*)(V_MEM_BASE + ptr+i*2);
+               if(*(p_vmem)!=input_search[i])
+               	   break;
+        	}
+        	if(i==search_len){
+               for(i=0;i<search_len;i++){
+               	
+                    p_vmem = (u8*)(V_MEM_BASE + ptr+i*2);
+			        *p_vmem++ ;
+			        *p_vmem++ = ch_color;
+                    
+                }
+        	}
+        }
+
+	}
+}
+
+PUBLIC void find_search(CONSOLE * p_con){
+	int ptr=0;
+    char ch_color =0x0C;
+    u8* p_vmem;
+    
+	for(ptr=p_con->original_addr;ptr<V_MEM_BASE + p_con->cursor * 2-search_len;ptr+=2){
+		p_vmem = (u8*)(V_MEM_BASE + ptr);
+		int i=0;
+        if(*(p_vmem)==input_search[0]){
+
+        	for(i=1;i<search_len;i++){
+               p_vmem=(u8*)(V_MEM_BASE + ptr+i*2);
+               if(*(p_vmem)!=input_search[i])
+               	   break;
+        	}
+        	if(i==search_len){
+               for(i=0;i<search_len;i++){
+               	
+                    p_vmem = (u8*)(V_MEM_BASE + ptr+i*2);
+			        *p_vmem++ ;
+			        *p_vmem++ = ch_color;
+                    
+                }
+        	}
+        }
+	}
+}
+
+/*======================================================================*
+			   clear_screen
+ *======================================================================*/
+PUBLIC void clear_screen(CONSOLE * p_con)
+{
+ while (p_con -> cursor != 1)
+ {
+   out_char(p_con,'\b');
+ }
+}
 /*======================================================================*
 			   init_screen
  *======================================================================*/
@@ -72,8 +161,9 @@ PUBLIC int is_current_console(CONSOLE* p_con)
  *======================================================================*/
 PUBLIC void out_char(CONSOLE* p_con, char ch)
 {
+        disp_pos = 0;
 	u8* p_vmem = (u8*)(V_MEM_BASE + p_con->cursor * 2);
-
+        char ch_color =  DEFAULT_CHAR_COLOR;
 	switch(ch) {
 	case '\n':
 		if (p_con->cursor < p_con->original_addr +
@@ -85,16 +175,43 @@ PUBLIC void out_char(CONSOLE* p_con, char ch)
 		break;
 	case '\b':
 		if (p_con->cursor > p_con->original_addr) {
-			p_con->cursor--;
-			*(p_vmem-2) = ' ';
-			*(p_vmem-1) = DEFAULT_CHAR_COLOR;
-		}
+                 if (tabs_len > 0 && p_con->cursor == tabs[tabs_len-1]+4)
+                  {
+                   --tabs_len;
+                   p_con->cursor -= 4;
+                  }
+                  else  
+                 {
+                 p_con->cursor--;
+                 *(p_vmem-2) = ' ';
+	         *(p_vmem-1) = DEFAULT_CHAR_COLOR;
+                 p_vmem = (u8*)(V_MEM_BASE + p_con->cursor * 2);
+                   if ((p_con->cursor - p_con->original_addr+1) % SCREEN_WIDTH  == 0)
+                        while (*(p_vmem-2) == ' ' && p_con->cursor > 0)
+                        {
+                         p_con->cursor--;
+                         p_vmem = (u8*)(V_MEM_BASE + p_con->cursor * 2);
+                         if ((p_con->cursor - p_con->original_addr) % SCREEN_WIDTH  == 0) break;
+                        }
+                 }
+		   }
+
 		break;
 	default:
 		if (p_con->cursor <
 		    p_con->original_addr + p_con->v_mem_limit - 1) {
+                        switch(color)
+                        {
+                        case 0: 
+                          ch_color = DEFAULT_CHAR_COLOR;
+                          break;
+                        case 1:
+                          ch_color = 0x0C;
+                          break;
+                       
+                        }
 			*p_vmem++ = ch;
-			*p_vmem++ = DEFAULT_CHAR_COLOR;
+			*p_vmem++ = ch_color;
 			p_con->cursor++;
 		}
 		break;
